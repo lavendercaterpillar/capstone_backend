@@ -1,6 +1,7 @@
 package com.ellie.capstone.model;
 
 import jakarta.persistence.*;
+// import com.fasterxml.jackson.annotation.JsonProperty; // Only needed if JSON name is different AND you don't want to change Java field name
 
 @Entity
 @Table(name = "projects")
@@ -10,44 +11,147 @@ public class Project {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "project_name")
     private String projectName;
+
+    @Column(name = "location")
     private String location;
 
+    @Column(name = "area")
     private double area;
 
+    @Column(name = "north_wall_area")
     private double northWallArea;
-    private int northWallWindows;
 
+    @Column(name = "north_wall_windows") 
+    private int northWindowCount;
+
+    @Column(name = "west_wall_area")
     private double westWallArea;
-    private int westWallWindows;
 
+    @Column(name = "west_wall_windows") 
+    private int westWindowCount; 
+
+    @Column(name = "south_wall_area")
     private double southWallArea;
-    private int southWallWindows;
 
+    @Column(name = "south_wall_windows") 
+    private int southWindowCount; 
+
+    @Column(name = "east_wall_area")
     private double eastWallArea;
-    private int eastWallWindows;
+
+    @Column(name = "east_wall_windows") 
+    private int eastWindowCount; 
 
     // 🔧 Constructors
     public Project() {}
 
+    // Update your constructor to reflect the new field names
     public Project(String projectName, String location, double area,
-                   double northWallArea, int northWallWindows,
-                   double westWallArea, int westWallWindows,
-                   double southWallArea, int southWallWindows,
-                   double eastWallArea, int eastWallWindows) {
+                   double northWallArea, int northWindowCount, 
+                   double westWallArea, int westWindowCount,   
+                   double southWallArea, int southWindowCount, 
+                   double eastWallArea, int eastWindowCount) { 
         this.projectName = projectName;
         this.location = location;
         this.area = area;
         this.northWallArea = northWallArea;
-        this.northWallWindows = northWallWindows;
+        this.northWindowCount = northWindowCount; 
         this.westWallArea = westWallArea;
-        this.westWallWindows = westWallWindows;
+        this.westWindowCount = westWindowCount;   
         this.southWallArea = southWallArea;
-        this.southWallWindows = southWallWindows;
+        this.southWindowCount = southWindowCount; 
         this.eastWallArea = eastWallArea;
-        this.eastWallWindows = eastWallWindows;
+        this.eastWindowCount = eastWindowCount;   
     }
 
-    // 🧼 Getters and Setters (Generate or use Lombok)
-    // IntelliJ: Right-click → Generate → Getter and Setter
+    // 🧼 Getters and Setters for ALL fields
+      public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public double getArea() {
+        return area;
+    }
+
+    public void setArea(double area) {
+        this.area = area;
+    }
+
+    public double getNorthWallArea() {
+        return northWallArea;
+    }
+
+    public void setNorthWallArea(double northWallArea) {
+        this.northWallArea = northWallArea;
+    }
+
+    public double getWestWallArea() {
+        return westWallArea;
+    }
+
+    public void setWestWallArea(double westWallArea) {
+        this.westWallArea = westWallArea;
+    }
+
+    public int getWestWindowCount() {
+        return westWindowCount;
+    }
+
+    public void setWestWindowCount(int westWindowCount) {
+        this.westWindowCount = westWindowCount;
+    }
+
+    public double getSouthWallArea() {
+        return southWallArea;
+    }
+
+    public void setSouthWallArea(double southWallArea) {
+        this.southWallArea = southWallArea;
+    }
+
+    public int getSouthWindowCount() {
+        return southWindowCount;
+    }
+
+    public void setSouthWindowCount(int southWindowCount) {
+        this.southWindowCount = southWindowCount;
+    }
+
+    public double getEastWallArea() {
+        return eastWallArea;
+    }
+
+    public void setEastWallArea(double eastWallArea) {
+        this.eastWallArea = eastWallArea;
+    }
+
+    public int getEastWindowCount() {
+        return eastWindowCount;
+    }
+
+    public void setEastWindowCount(int eastWindowCount) {
+        this.eastWindowCount = eastWindowCount;
+    }
 }
