@@ -2,9 +2,12 @@
 FROM openjdk:17-jdk-slim AS build
 WORKDIR /app
 
-COPY .mvn .mvn            # includes Maven wrapper scripts and config
-COPY mvnw mvnw            # Unix script
-COPY mvnw.cmd mvnw.cmd    # Windows script (safe to copy)
+# includes Maven wrapper scripts and config
+COPY .mvn .mvn
+# Unix script
+COPY mvnw mvnw
+# Windows script (safe to copy)
+COPY mvnw.cmd mvnw.cmd
 COPY pom.xml pom.xml
 COPY src ./src
 
