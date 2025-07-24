@@ -1,5 +1,5 @@
 # Stage 1: Build the Spring Boot application
-FROM openjdk:17-jdk-slim AS build
+FROM eclipse-temurin:21-jre AS build
 WORKDIR /app
 
 # includes Maven wrapper scripts and config
