@@ -1,7 +1,6 @@
 package com.ellie.capstone.model;
 
 import jakarta.persistence.*;
-// import com.fasterxml.jackson.annotation.JsonProperty; // Only needed if JSON name is different AND you don't want to change Java field name
 
 @Entity
 @Table(name = "projects")
