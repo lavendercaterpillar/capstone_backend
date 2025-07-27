@@ -1,6 +1,8 @@
 package com.ellie.capstone.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "projects")
@@ -10,62 +12,73 @@ public class Project {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Project name is required")
     @Column(name = "project_name")
     private String projectName;
 
+    @NotBlank(message = "Location is required")
     @Column(name = "location")
     private String location;
 
+    @NotNull(message = "Area is required")
     @Column(name = "area")
-    private double area;
+    private Double area;
 
-    @Column(name = "north_wall_area")
-    private double northWallArea;
+    @NotNull(message = "North wall area is required")
+    @Column(name = "north_wall")
+    private Double northWallArea;
 
-    @Column(name = "north_wall_windows") 
-    private int northWindowCount;
+    @NotNull(message = "North window count is required")
+    @Column(name = "north_window")
+    private Integer northWindowCount;
 
-    @Column(name = "west_wall_area")
-    private double westWallArea;
+    @NotNull(message = "South wall area is required")
+    @Column(name = "south_wall")
+    private Double southWallArea;
 
-    @Column(name = "west_wall_windows") 
-    private int westWindowCount; 
+    @NotNull(message = "South window count is required")
+    @Column(name = "south_window")
+    private Integer southWindowCount;
 
-    @Column(name = "south_wall_area")
-    private double southWallArea;
+    @NotNull(message = "East wall area is required")
+    @Column(name = "east_wall")
+    private Double eastWallArea;
 
-    @Column(name = "south_wall_windows") 
-    private int southWindowCount; 
+    @NotNull(message = "East window count is required")
+    @Column(name = "east_window")
+    private Integer eastWindowCount;
 
-    @Column(name = "east_wall_area")
-    private double eastWallArea;
+    @NotNull(message = "West wall area is required")
+    @Column(name = "west_wall")
+    private Double westWallArea;
 
-    @Column(name = "east_wall_windows") 
-    private int eastWindowCount; 
+    @NotNull(message = "West window count is required")
+    @Column(name = "west_window")
+    private Integer westWindowCount;
 
-    // 🔧 Constructors
+    // Constructors
     public Project() {}
 
     // Update your constructor to reflect the new field names
     public Project(String projectName, String location, double area,
-                   double northWallArea, int northWindowCount, 
-                   double westWallArea, int westWindowCount,   
-                   double southWallArea, int southWindowCount, 
-                   double eastWallArea, int eastWindowCount) { 
+                   double northWallArea, int northWindowCount,
+                   double westWallArea, int westWindowCount,
+                   double southWallArea, int southWindowCount,
+                   double eastWallArea, int eastWindowCount) {
         this.projectName = projectName;
         this.location = location;
         this.area = area;
         this.northWallArea = northWallArea;
-        this.northWindowCount = northWindowCount; 
+        this.northWindowCount = northWindowCount;
         this.westWallArea = westWallArea;
-        this.westWindowCount = westWindowCount;   
+        this.westWindowCount = westWindowCount;
         this.southWallArea = southWallArea;
-        this.southWindowCount = southWindowCount; 
+        this.southWindowCount = southWindowCount;
         this.eastWallArea = eastWallArea;
-        this.eastWindowCount = eastWindowCount;   
+        this.eastWindowCount = eastWindowCount;
     }
 
-    // 🧼 Getters and Setters for ALL fields
+    // Getters and Setters for ALL fields
       public Long getId() {
         return id;
     }
@@ -104,6 +117,14 @@ public class Project {
 
     public void setNorthWallArea(double northWallArea) {
         this.northWallArea = northWallArea;
+    }
+
+    public int getNorthWindowCount() {
+        return northWindowCount;
+    }
+
+    public void setNorthWindowCount(int northWindowCount) {
+        this.northWindowCount = northWindowCount;
     }
 
     public double getWestWallArea() {
