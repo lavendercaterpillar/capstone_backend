@@ -39,7 +39,7 @@ public class ProjectController {
 //        return service.getAllProjects();
 //    }
 
-//    // GET /api/projects — validation errors handled globally- No Filtering
+//    // GET /api/projects — validation errors handled globally-No Filtering
 //    @GetMapping
 //    public List<Project> getAllProjects() {
 //        List<Project> projects = service.getAllProjects();
@@ -71,6 +71,33 @@ public class ProjectController {
             throw new ResourceNotFoundException("Project with ID " + id + " not found.");
         }
         return ResponseEntity.ok(project);
+    }
+
+    // PUT /api/projects/{id}
+    @PutMapping("/{id}")
+    public ResponseEntity<Project> updateProject(
+            @PathVariable Long id,
+            @Valid @RequestBody Project updatedProject) {
+
+        Project existing = service.getProjectById(id);
+        if (existing == null) {
+            throw new ResourceNotFoundException("Project with ID " + id + " not found.");
+        }
+
+        Project saved = service.updateProject(id, updatedProject);
+        return ResponseEntity.ok(saved);
+    }
+
+    // DELETE /api/projects/{id}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteProject(@PathVariable Long id) {
+        Project existing = service.getProjectById(id);
+        if (existing == null) {
+            throw new ResourceNotFoundException("Project with ID " + id + " not found.");
+        }
+
+        service.deleteProject(id);
+        return ResponseEntity.ok("Project with ID " + id + " deleted successfully.");
     }
 
 }

@@ -39,4 +39,13 @@ public class ProjectService {
             return repo.findAll();
         }
     }
+
+    public Project updateProject(Long id, Project updatedProject) {
+        updatedProject.setId(id);
+        return repo.save(updatedProject);
+    }
+
+    public void deleteProject(Long id) {
+        repo.deleteById(id);
+    }
 }
