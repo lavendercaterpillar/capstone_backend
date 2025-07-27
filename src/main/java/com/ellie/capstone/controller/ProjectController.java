@@ -39,13 +39,38 @@ public class ProjectController {
 //        return service.getAllProjects();
 //    }
 
-    // GET /api/projects — validation errors handled globally
+//    // GET /api/projects — validation errors handled globally- No Filtering
+//    @GetMapping
+//    public List<Project> getAllProjects() {
+//        List<Project> projects = service.getAllProjects();
+//        if (projects.isEmpty()) {
+//            throw new ResourceNotFoundException("No projects found in the database.");
+//        }
+//        return projects;
+//    }
+
+    // GET /api/projects?projectName=...&location=...
     @GetMapping
-    public List<Project> getAllProjects() {
-        List<Project> projects = service.getAllProjects();
+    public List<Project> filterProjects(
+            @RequestParam(required = false) String projectName,
+            @RequestParam(required = false) String location
+    ) {
+        List<Project> projects = service.filterProjects(projectName, location);
         if (projects.isEmpty()) {
-            throw new ResourceNotFoundException("No projects found in the database.");
+            throw new ResourceNotFoundException("No matching projects found.");
         }
         return projects;
     }
+
+
+    // GET /api/projects/{id}
+    @GetMapping("/{id}")
+    public ResponseEntity<Project> getProjectById(@PathVariable Long id) {
+        Project project = service.getProjectById(id);
+        if (project == null) {
+            throw new ResourceNotFoundException("Project with ID " + id + " not found.");
+        }
+        return ResponseEntity.ok(project);
+    }
+
 }
