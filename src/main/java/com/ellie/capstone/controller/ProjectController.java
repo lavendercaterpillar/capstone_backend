@@ -5,16 +5,12 @@ import com.ellie.capstone.service.ProjectService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
-@RequestMapping("/api/projects")  // Base path
+@RequestMapping("/api/projects")
 public class ProjectController {
 
     private final ProjectService service;
@@ -25,22 +21,13 @@ public class ProjectController {
 
 //    // POST /api/projects w/o error handler
 //    @PostMapping
-//
 //    public Project createProject(@RequestBody Project project) {
 //        return service.createProject(project);
 //    }
 
-    // POST /api/projects with error handler
+    // POST /api/projects — validation errors handled globally
     @PostMapping
-    public ResponseEntity<?> createProject(@Valid @RequestBody Project project, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            Map<String, String> errors = new HashMap<>();
-            List<FieldError> fieldErrors = bindingResult.getFieldErrors();
-            for (FieldError error : fieldErrors) {
-                errors.put(error.getField(), error.getDefaultMessage());
-            }
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
-        }
+    public ResponseEntity<Project> createProject(@Valid @RequestBody Project project) {
         Project saved = service.createProject(project);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
