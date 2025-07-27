@@ -1,5 +1,6 @@
 package com.ellie.capstone.controller;
 
+import com.ellie.capstone.exception.ResourceNotFoundException;
 import com.ellie.capstone.model.Project;
 import com.ellie.capstone.service.ProjectService;
 import jakarta.validation.Valid;
@@ -32,10 +33,19 @@ public class ProjectController {
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
-    // GET /api/projects
+//    // GET /api/projects
+//    @GetMapping
+//    public List<Project> getAllProjects() {
+//        return service.getAllProjects();
+//    }
+
+    // GET /api/projects — validation errors handled globally
     @GetMapping
     public List<Project> getAllProjects() {
-        return service.getAllProjects();
+        List<Project> projects = service.getAllProjects();
+        if (projects.isEmpty()) {
+            throw new ResourceNotFoundException("No projects found in the database.");
+        }
+        return projects;
     }
-
 }
