@@ -3,6 +3,7 @@ package com.ellie.capstone.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 @Entity
 @Table(name = "projects")
@@ -20,11 +21,11 @@ public class Project {
     @Column(name = "location")
     private String location;
 
-    @NotNull(message = "Area is required")
+    @Positive(message = "Area must be greater than 0")
     @Column(name = "area")
     private Double area;
 
-    @NotNull(message = "North wall area is required")
+    @Positive(message = "North wall Area must be greater than 0")
     @Column(name = "north_wall")
     private Double northWallArea;
 
@@ -32,7 +33,7 @@ public class Project {
     @Column(name = "north_window")
     private Integer northWindowCount;
 
-    @NotNull(message = "South wall area is required")
+    @Positive(message = "South wall Area must be greater than 0")
     @Column(name = "south_wall")
     private Double southWallArea;
 
@@ -40,7 +41,7 @@ public class Project {
     @Column(name = "south_window")
     private Integer southWindowCount;
 
-    @NotNull(message = "East wall area is required")
+    @Positive(message = "East wall Area must be greater than 0")
     @Column(name = "east_wall")
     private Double eastWallArea;
 
@@ -48,7 +49,7 @@ public class Project {
     @Column(name = "east_window")
     private Integer eastWindowCount;
 
-    @NotNull(message = "West wall area is required")
+    @Positive(message = "West wall Area must be greater than 0")
     @Column(name = "west_wall")
     private Double westWallArea;
 
