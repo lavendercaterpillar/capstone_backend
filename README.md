@@ -113,15 +113,19 @@ SET
 ```properties
 spring.application.name=capstone
 
-# Remote DB (Render + FreeSQLDatabase)
-spring.datasource.url=jdbc:mysql://sql5.freesqldatabase.com:3306/sql5791762
-spring.datasource.username=sql5791762
-spring.datasource.password=PStv6TwwkN
+# DB local connection
+spring.datasource.url=${DB_URL}
+spring.datasource.username=${DB_USERNAME}
+spring.datasource.password=${DB_PASSWORD}
 spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 
-spring.jpa.hibernate.ddl-auto=update
+# JPA config
+# Remove next line if Flyway will update DB:
+spring.jpa.hibernate.ddl-auto=update 
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
+
+# Optional: Fix time zone issues
 spring.datasource.hikari.connection-timezone=UTC
 ```
 
