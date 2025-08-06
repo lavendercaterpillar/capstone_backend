@@ -15,7 +15,7 @@ public class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**")  // Apply to your API endpoints
-                        .allowedOrigins("http://localhost:5173") // Your Vite React frontend
+                        .allowedOrigins("http://localhost:5173", "https://hvac-system-design.onrender.com") // Your Render  and Vite React frontend
                         .allowedMethods("GET", "POST", "PUT", "DELETE")
                         .allowedHeaders("*")
                         .allowCredentials(true);
