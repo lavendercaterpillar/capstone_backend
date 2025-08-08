@@ -4,100 +4,73 @@ import com.ellie.capstone.exception.ResourceNotFoundException;
 import com.ellie.capstone.model.Project;
 import com.ellie.capstone.service.ProjectService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/projects")
+@CrossOrigin(origins = "*")
 public class ProjectController {
 
-    private final ProjectService service;
+    private final ProjectService projectService;
 
-    public ProjectController(ProjectService service) {
-        this.service = service;
+    @Autowired
+    public ProjectController(ProjectService projectService) {
+        this.projectService = projectService;
     }
 
-//    // POST /api/projects w/o error handler
-//    @PostMapping
-//    public Project createProject(@RequestBody Project project) {
-//        return service.createProject(project);
-//    }
-
-    // POST /api/projects — validation errors handled globally
     @PostMapping
-    public ResponseEntity<Project> createProject(@Valid @RequestBody Project project) {
-        Project saved = service.createProject(project);
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
-    }
-
-//    // GET /api/projects
-//    @GetMapping
-//    public List<Project> getAllProjects() {
-//        return service.getAllProjects();
-//    }
-
-//    // GET /api/projects — validation errors handled globally-No Filtering
-//    @GetMapping
-//    public List<Project> getAllProjects() {
-//        List<Project> projects = service.getAllProjects();
-//        if (projects.isEmpty()) {
-//            throw new ResourceNotFoundException("No projects found in the database.");
-//        }
-//        return projects;
-//    }
-
-    // GET /api/projects?projectName=...&location=...
-    @GetMapping
-    public List<Project> filterProjects(
-            @RequestParam(required = false) String projectName,
-            @RequestParam(required = false) String location
-    ) {
-        List<Project> projects = service.filterProjects(projectName, location);
-        if (projects.isEmpty()) {
-            throw new ResourceNotFoundException("No matching projects found.");
+    public ResponseEntity<?> createProject(@Valid @RequestBody Project project, BindingResult result) {
+        if (result.hasErrors()) {
+            Map<String, String> errors = new HashMap<>();
+            result.getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+            return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
         }
-        return projects;
+        Project savedProject = projectService.saveProject(project);
+        return new ResponseEntity<>(savedProject, HttpStatus.CREATED);
     }
 
+    @GetMapping
+    public ResponseEntity<List<Project>> getAllProjects(
+            @RequestParam(required = false) String projectName,
+            @RequestParam(required = false) String location) {
 
-    // GET /api/projects/{id}
+        List<Project> projects = projectService.getAllProjects(projectName, location);
+        if (projects.isEmpty()) {
+            throw new ResourceNotFoundException("No projects found");
+        }
+        return ResponseEntity.ok(projects);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Project> getProjectById(@PathVariable Long id) {
-        Project project = service.getProjectById(id);
-        if (project == null) {
-            throw new ResourceNotFoundException("Project with ID " + id + " not found.");
-        }
+        Project project = projectService.getProjectById(id);
         return ResponseEntity.ok(project);
     }
 
-    // PUT /api/projects/{id}
     @PutMapping("/{id}")
-    public ResponseEntity<Project> updateProject(
-            @PathVariable Long id,
-            @Valid @RequestBody Project updatedProject) {
-
-        Project existing = service.getProjectById(id);
-        if (existing == null) {
-            throw new ResourceNotFoundException("Project with ID " + id + " not found.");
+    public ResponseEntity<?> updateProject(@PathVariable Long id, @Valid @RequestBody Project project, BindingResult result) {
+        if (result.hasErrors()) {
+            Map<String, String> errors = new HashMap<>();
+            result.getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+            return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
         }
-
-        Project saved = service.updateProject(id, updatedProject);
-        return ResponseEntity.ok(saved);
+        Project updatedProject = projectService.updateProject(id, project);
+        return ResponseEntity.ok(updatedProject);
     }
 
-    // DELETE /api/projects/{id}
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteProject(@PathVariable Long id) {
-        Project existing = service.getProjectById(id);
-        if (existing == null) {
-            throw new ResourceNotFoundException("Project with ID " + id + " not found.");
-        }
-
-        service.deleteProject(id);
-        return ResponseEntity.ok("Project with ID " + id + " deleted successfully.");
+    public ResponseEntity<Map<String, String>> deleteProject(@PathVariable Long id) {
+        projectService.deleteProject(id);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Project deleted successfully");
+        return ResponseEntity.ok(response);
     }
-
 }
