@@ -29,7 +29,20 @@ public class ProjectService {
     }
 
     public Project saveProject(Project project) {
-        enrichProjectWithWeather(project);
+        // Enrich with weather data
+        Weather weather = weatherService.findByLocation(project.getLocation())
+                .orElseGet(() -> {
+                    Map<String, Object> weatherData = weatherService.getWeatherSummary(project.getLocation());
+                    Weather newWeather = new Weather();
+                    newWeather.setLocation(project.getLocation());
+                    newWeather.setDryBulbTemp((Double) weatherData.get("dryBulbF"));
+                    newWeather.setWetBulbTemp((Double) weatherData.get("wetBulbF"));
+                    newWeather.setAvgSummerTemp((Double) weatherData.get("avgSummerF"));
+                    newWeather.setAvgWinterTemp((Double) weatherData.get("avgWinterF"));
+                    return weatherService.save(newWeather);
+                });
+
+        project.setWeather(weather);
         return projectRepository.save(project);
     }
 
