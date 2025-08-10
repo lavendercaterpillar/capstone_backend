@@ -63,13 +63,26 @@ public class ProjectService {
                 !updatedProject.getLocation().equals(existing.getLocation())) {
             Weather weather = weatherService.getWeatherForLocation(updatedProject.getLocation());
             existing.setWeather(weather);
+            existing.setLocation(updatedProject.getLocation());
         }
 
-        // Update other fields
+        // Update core project fields
         existing.setProjectName(updatedProject.getProjectName());
         existing.setArea(updatedProject.getArea());
 
-        // Update all other fields as needed...
+        // Update all wall areas and window counts
+        existing.setNorthWallArea(updatedProject.getNorthWallArea());
+        existing.setNorthWindowCount(updatedProject.getNorthWindowCount());
+
+        existing.setSouthWallArea(updatedProject.getSouthWallArea());
+        existing.setSouthWindowCount(updatedProject.getSouthWindowCount());
+
+        existing.setEastWallArea(updatedProject.getEastWallArea());
+        existing.setEastWindowCount(updatedProject.getEastWindowCount());
+
+        existing.setWestWallArea(updatedProject.getWestWallArea());
+        existing.setWestWindowCount(updatedProject.getWestWindowCount());
+
         return projectRepository.save(existing);
     }
 
