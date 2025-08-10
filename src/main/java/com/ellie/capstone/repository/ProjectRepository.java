@@ -2,6 +2,7 @@ package com.ellie.capstone.repository;
 
 import com.ellie.capstone.model.Project;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -10,8 +11,16 @@ import java.util.List;
 //    // like SQLAlchemy in Flask for basic CRUD
 //}
 
+@Repository
 public interface ProjectRepository extends JpaRepository<Project, Long> {
-    List<Project> findByProjectNameContainingIgnoreCase(String name);
+
+    // Optional filtering methods if needed later
+    // Find projects by projectName containing (case-insensitive)
+    List<Project> findByProjectNameContainingIgnoreCase(String projectName);
+
+    // Find projects by location containing (case-insensitive)
     List<Project> findByLocationContainingIgnoreCase(String location);
-    List<Project> findByProjectNameContainingIgnoreCaseAndLocationContainingIgnoreCase(String name, String location);
-    }
+
+    // Find projects by both projectName and location containing (case-insensitive)
+    List<Project> findByProjectNameContainingIgnoreCaseAndLocationContainingIgnoreCase(String projectName, String location);
+}

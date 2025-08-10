@@ -1,51 +1,81 @@
 package com.ellie.capstone.service;
 
+import com.ellie.capstone.exception.ResourceNotFoundException;
 import com.ellie.capstone.model.Project;
+import com.ellie.capstone.model.Weather;
 import com.ellie.capstone.repository.ProjectRepository;
+import com.ellie.capstone.repository.WeatherRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class ProjectService {
 
-    private final ProjectRepository repo;
+    private final ProjectRepository projectRepository;
+    private final WeatherService weatherService;
 
-    public ProjectService(ProjectRepository repo) {
-        this.repo = repo;
+    @Autowired
+    public ProjectService(ProjectRepository projectRepository,
+                          WeatherService weatherService) {
+        this.projectRepository = projectRepository;
+        this.weatherService = weatherService;
     }
 
+    @Transactional
     public Project createProject(Project project) {
-        return repo.save(project);  // save to DB
+        if (project.getLocation() != null) {
+            Weather weather = weatherService.getWeatherForLocation(project.getLocation());
+            project.setWeather(weather);
+        }
+        return projectRepository.save(project);
     }
 
     public List<Project> getAllProjects() {
-        return repo.findAll();
-    }
-
-    public Project getProjectById(Long id) {
-        return repo.findById(id).orElse(null);
+        return projectRepository.findAll();
     }
 
     public List<Project> filterProjects(String name, String location) {
         if (name != null && location != null) {
-            return repo.findByProjectNameContainingIgnoreCaseAndLocationContainingIgnoreCase(name, location);
+            return projectRepository.findByProjectNameContainingIgnoreCaseAndLocationContainingIgnoreCase(name, location);
         } else if (name != null) {
-            return repo.findByProjectNameContainingIgnoreCase(name);
+            return projectRepository.findByProjectNameContainingIgnoreCase(name);
         } else if (location != null) {
-            return repo.findByLocationContainingIgnoreCase(location);
-        } else {
-            return repo.findAll();
+            return projectRepository.findByLocationContainingIgnoreCase(location);
         }
+        return projectRepository.findAll();
+    }
+
+    public Project getProjectById(Long id) {
+        return projectRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + id));
     }
 
     public Project updateProject(Long id, Project updatedProject) {
-        updatedProject.setId(id);
-        return repo.save(updatedProject);
+        Project existing = getProjectById(id); // Ensures project exists
+
+        // Update weather if location changed
+        if (updatedProject.getLocation() != null &&
+                !updatedProject.getLocation().equals(existing.getLocation())) {
+            Weather weather = weatherService.getWeatherForLocation(updatedProject.getLocation());
+            existing.setWeather(weather);
+        }
+
+        // Update other fields
+        existing.setProjectName(updatedProject.getProjectName());
+        existing.setArea(updatedProject.getArea());
+
+        // Update all other fields as needed...
+        return projectRepository.save(existing);
     }
 
     public void deleteProject(Long id) {
-        repo.deleteById(id);
+        getProjectById(id); // Ensures project exists
+        projectRepository.deleteById(id);
     }
+
 }
