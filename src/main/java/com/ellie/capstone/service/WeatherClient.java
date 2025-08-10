@@ -11,7 +11,6 @@ import java.util.List;
 
 @Service
 public class WeatherClient {
-
     private final RestTemplate restTemplate;
 
     @Value("${weather.api.key}")
@@ -27,6 +26,7 @@ public class WeatherClient {
                 .queryParam("q", city)
                 .queryParam("limit", 1)
                 .queryParam("appid", apiKey)
+                .build(false)  // Prevents double encoding
                 .toUriString();
 
         GeoLocation[] locations = restTemplate.getForObject(url, GeoLocation[].class);
@@ -106,6 +106,7 @@ public class WeatherClient {
                 .queryParam("lat", loc.getLat())
                 .queryParam("lon", loc.getLon())
                 .queryParam("appid", apiKey)
+                .build(false)  // Prevents double encoding
                 .toUriString();
 
         CurrentWeatherResponse response = restTemplate.getForObject(url, CurrentWeatherResponse.class);
@@ -145,9 +146,13 @@ public class WeatherClient {
     }
 
     // Kelvin to Fahrenheit conversion
-    private double kelvinToFahrenheit(double kelvin) {
+    // Change from private to package-private (no modifier)
+    double kelvinToFahrenheit(double kelvin) {
         return (kelvin - 273.15) * 9/5 + 32;
     }
+//    private double kelvinToFahrenheit(double kelvin) {
+//        return (kelvin - 273.15) * 9/5 + 32;
+//    }
 
     // === DTO classes ===
 

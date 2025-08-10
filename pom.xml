@@ -26,10 +26,13 @@
 		<tag/>
 		<url/>
 	</scm>
-	<properties>
+
+    <properties>
 		<java.version>21</java.version>
-	</properties>
-	<dependencies>
+        <mockito.version>5.17.0</mockito.version> <!-- Consistent with your dependencies -->
+    </properties>
+
+    <dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
@@ -95,7 +98,6 @@
             <scope>test</scope>
         </dependency>
 
-
         <!-- 7. Spring Boot Flyway  -->
 <!--		<dependency>-->
 <!--			<groupId>org.flywaydb</groupId>-->
@@ -104,24 +106,36 @@
 
     </dependencies>
 
-	<build>
-		<plugins>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <release>21</release>
+                    <parameters>true</parameters>
+                </configuration>
+            </plugin>
 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.11.0</version>  <!-- latest stable with Java 21 support -->
-				<configuration>
-					<release>21</release>
-				</configuration>
-			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <argLine>
+                        -javaagent:"${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar"
+                        --add-opens java.base/java.lang=ALL-UNNAMED
+                    </argLine>
+                </configuration>
+            </plugin>
 
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 
-		</plugins>
-	</build>
 
 </project>

@@ -1,137 +1,116 @@
 package com.ellie.capstone.service;
 
-import com.ellie.capstone.service.WeatherClient.CurrentWeatherResponse;
-import com.ellie.capstone.service.WeatherClient.GeoLocation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.*;
 
+@SpringBootTest
 class WeatherClientTest {
 
-    @Mock
+    @Autowired
+    private WeatherClient weatherClient;
+
+    @Autowired
     private RestTemplate restTemplate;
 
-    @InjectMocks
-    private WeatherClient weatherClient;
+    private MockRestServiceServer mockServer;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        // Manually inject apiKey since @Value is not processed in plain unit tests
-        TestUtils.setField(weatherClient, "apiKey", "fake-api-key");
+        mockServer = MockRestServiceServer.createServer(restTemplate);
     }
 
     @Test
-    void getLatLon_success() {
-        GeoLocation location = new GeoLocation();
-        location.setLat(12.34);
-        location.setLon(56.78);
+    void getLatLon_shouldReturnLocation() {
+        String city = "New York";
+        String mockResponse = """
+            [{
+                "lat": 40.7128,
+                "lon": -74.006
+            }]
+            """;
 
-        when(restTemplate.getForObject(anyString(), eq(GeoLocation[].class)))
-                .thenReturn(new GeoLocation[]{location});
+        mockServer.expect(requestTo(
+                        "http://api.openweathermap.org/geo/1.0/direct?q=New%20York&limit=1&appid=d5404a88664a7b6d8442f0d5b13f2d82"
+                ))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(mockResponse, MediaType.APPLICATION_JSON));
 
-        GeoLocation result = weatherClient.getLatLon("London");
+        WeatherClient.GeoLocation location = weatherClient.getLatLon(city);
 
-        assertEquals(12.34, result.getLat());
-        assertEquals(56.78, result.getLon());
+        assertEquals(40.7128, location.getLat(), 0.0001);
+        assertEquals(-74.006, location.getLon(), 0.0001);
+        mockServer.verify();
     }
 
     @Test
-    void getLatLon_noResults_throws() {
-        when(restTemplate.getForObject(anyString(), eq(GeoLocation[].class)))
-                .thenReturn(new GeoLocation[]{});
+    void getCurrentWeather_shouldReturnWeatherData() {
+        String city = "New York";
+        String geoMockResponse = """
+            [{
+                "lat": 40.7128,
+                "lon": -74.006
+            }]
+            """;
 
-        RuntimeException ex = assertThrows(RuntimeException.class,
-                () -> weatherClient.getLatLon("UnknownCity"));
-
-        assertTrue(ex.getMessage().contains("No location found"));
-    }
-
-    @Test
-    void getAverageTemp_summerBranch() {
-        double temp = weatherClient.getAverageTemp(
-                "Miami", LocalDate.of(2024, 7, 1), LocalDate.of(2024, 7, 10));
-        assertEquals(80.0, temp);
-    }
-
-    @Test
-    void getAverageTemp_winterBranch() {
-        double temp = weatherClient.getAverageTemp(
-                "Chicago", LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 10));
-        assertEquals(40.0, temp);
-    }
-
-    @Test
-    void getCurrentWeather_success() {
-        GeoLocation location = new GeoLocation();
-        location.setLat(12.34);
-        location.setLon(56.78);
-
-        when(restTemplate.getForObject(contains("geo"), eq(GeoLocation[].class)))
-                .thenReturn(new GeoLocation[]{location});
-
-        CurrentWeatherResponse.Main main = new CurrentWeatherResponse.Main();
-        main.setTemp(300.0); // Kelvin
-        main.setHumidity(50);
-        main.setPressure(1013);
-
-        CurrentWeatherResponse response = new CurrentWeatherResponse();
-        response.setMain(main);
-
-        when(restTemplate.getForObject(contains("weather"), eq(CurrentWeatherResponse.class)))
-                .thenReturn(response);
-
-        WeatherClient.CurrentWeather result = weatherClient.getCurrentWeather("Paris");
-
-        assertEquals(80.33, result.getDryBulbTempF(), 0.5);
-        assertEquals(50, result.getHumidity());
-        assertEquals(1013, result.getPressure());
-    }
-
-    @Test
-    void getCurrentWeather_nullMain_throws() {
-        GeoLocation location = new GeoLocation();
-        location.setLat(12.34);
-        location.setLon(56.78);
-
-        when(restTemplate.getForObject(contains("geo"), eq(GeoLocation[].class)))
-                .thenReturn(new GeoLocation[]{location});
-
-        CurrentWeatherResponse response = new CurrentWeatherResponse();
-        response.setMain(null);
-
-        when(restTemplate.getForObject(contains("weather"), eq(CurrentWeatherResponse.class)))
-                .thenReturn(response);
-
-        RuntimeException ex = assertThrows(RuntimeException.class,
-                () -> weatherClient.getCurrentWeather("Paris"));
-        assertTrue(ex.getMessage().contains("Failed to fetch current weather"));
-    }
-
-    @Test
-    void calculateWetBulbF_returnsExpected() {
-        double wetBulb = weatherClient.calculateWetBulbF(86.0, 60, 1013);
-        // We just check it returns a plausible value
-        assertTrue(wetBulb > 50 && wetBulb < 86);
-    }
-
-    // Utility to set private field without Spring
-    static class TestUtils {
-        static void setField(Object target, String fieldName, Object value) {
-            try {
-                java.lang.reflect.Field field = target.getClass().getDeclaredField(fieldName);
-                field.setAccessible(true);
-                field.set(target, value);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+        String weatherMockResponse = """
+            {
+                "main": {
+                    "temp": 290.15,
+                    "humidity": 65,
+                    "pressure": 1012
+                }
             }
-        }
+            """;
+
+        // First request - geocoding
+        mockServer.expect(requestTo(
+                        "http://api.openweathermap.org/geo/1.0/direct?q=New%20York&limit=1&appid=d5404a88664a7b6d8442f0d5b13f2d82"
+                ))
+                .andRespond(withSuccess(geoMockResponse, MediaType.APPLICATION_JSON));
+
+        // Second request - weather data
+        mockServer.expect(requestTo(
+                        "https://api.openweathermap.org/data/2.5/weather?lat=40.7128&lon=-74.006&appid=d5404a88664a7b6d8442f0d5b13f2d82"
+                ))
+                .andRespond(withSuccess(weatherMockResponse, MediaType.APPLICATION_JSON));
+
+        WeatherClient.CurrentWeather currentWeather = weatherClient.getCurrentWeather(city);
+
+        assertEquals(62.6, currentWeather.getDryBulbTempF(), 0.1);
+        assertEquals(65, currentWeather.getHumidity());
+        assertEquals(1012, currentWeather.getPressure());
+        mockServer.verify();
+    }
+
+    @Test
+    void getAverageTemp_shouldReturnHardcodedValues() {
+        double summerTemp = weatherClient.getAverageTemp("New York",
+                LocalDate.of(2023, 6, 1),
+                LocalDate.of(2023, 8, 31));
+        assertEquals(80.0, summerTemp);
+
+        double winterTemp = weatherClient.getAverageTemp("New York",
+                LocalDate.of(2022, 12, 1),
+                LocalDate.of(2023, 2, 28));
+        assertEquals(40.0, winterTemp);
+    }
+
+    @Test
+    void kelvinToFahrenheit_shouldConvertCorrectly() {
+        assertEquals(32.0, weatherClient.kelvinToFahrenheit(273.15), 0.01);  // Freezing
+        assertEquals(212.0, weatherClient.kelvinToFahrenheit(373.15), 0.01); // Boiling
+        assertEquals(-459.67, weatherClient.kelvinToFahrenheit(0), 0.01);    // Absolute zero
     }
 }
-

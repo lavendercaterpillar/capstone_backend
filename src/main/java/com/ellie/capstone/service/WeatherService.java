@@ -33,27 +33,41 @@ public class WeatherService {
                 current.getPressure()
         );
 
+        // Store current conditions
         weatherSummary.put("dryBulbF", current.getDryBulbTempF());
         weatherSummary.put("humidity", current.getHumidity());
         weatherSummary.put("pressure", current.getPressure());
         weatherSummary.put("wetBulbF", wetBulb);
 
-        // Seasonal averages
+        // Get Seasonal averages
         LocalDate now = LocalDate.now();
         int currentYear = now.getYear();
 
-        weatherSummary.put("avgSummerF", weatherClient.getAverageTemp(
+        double avgSummer = weatherClient.getAverageTemp(
                 city,
                 LocalDate.of(currentYear, 6, 1),
                 LocalDate.of(currentYear, 8, 31)
-        ));
+        );
 
-        // Winter spans Dec previous year to Feb current year
-        weatherSummary.put("avgWinterF", weatherClient.getAverageTemp(
+        double avgWinter = weatherClient.getAverageTemp(
                 city,
                 LocalDate.of(currentYear - 1, 12, 1),
                 LocalDate.of(currentYear, 2, 28)
-        ));
+        );
+
+        weatherSummary.put("avgSummerF", avgSummer);
+        weatherSummary.put("avgWinterF", avgWinter);
+
+        // Create and save Weather entity
+        Weather weather = new Weather();
+        weather.setLocation(city);
+        weather.setDryBulbTemp(current.getDryBulbTempF());
+        weather.setWetBulbTemp(wetBulb);
+        weather.setAvgSummerTemp(avgSummer);
+        weather.setAvgWinterTemp(avgWinter);
+
+        // Save to repository
+        weatherRepository.save(weather);
 
         return weatherSummary;
     }
