@@ -88,7 +88,15 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- 7. Spring Boot Flyway  -->
+        <!-- 8. H2 dependency for test scope-->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+
+        <!-- 7. Spring Boot Flyway  -->
 <!--		<dependency>-->
 <!--			<groupId>org.flywaydb</groupId>-->
 <!--			<artifactId>flyway-core</artifactId>-->

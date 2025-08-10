@@ -16,7 +16,7 @@ public class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**")  // Apply CORS to all /api/** endpoints
-                        .allowedOrigins(
+                        .allowedOriginPatterns(
                                 "http://localhost:5173",             // Vite React dev server
                                 "https://hvac-system-design.onrender.com" // Production frontend URL
                         )

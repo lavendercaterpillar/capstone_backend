@@ -38,52 +38,64 @@ public class WeatherClient {
     }
 
     // Calculate average temperature for date range (inclusive)
+//    public double getAverageTemp(String city, LocalDate startDate, LocalDate endDate) {
+//        GeoLocation loc = getLatLon(city);
+//
+//        double sumFahrenheit = 0;
+//        int count = 0;
+//
+//        // Loop over dates
+//        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+//            long epochSeconds = date.atStartOfDay(ZoneOffset.UTC).toEpochSecond();
+//
+//            String url = UriComponentsBuilder.fromHttpUrl("https://api.openweathermap.org/data/3.0/onecall/timemachine")
+//                    .queryParam("lat", loc.getLat())
+//                    .queryParam("lon", loc.getLon())
+//                    .queryParam("dt", epochSeconds)
+//                    .queryParam("appid", apiKey)
+//                    .toUriString();
+//
+//            TimeMachineResponse response = restTemplate.getForObject(url, TimeMachineResponse.class);
+//
+//            if (response == null || response.getData() == null || response.getData().isEmpty()) {
+//                continue; // no data for that day
+//            }
+//
+//            // Average hourly temps for the day (if hourly data is returned)
+//            double dailySum = 0;
+//            int hourlyCount = 0;
+//
+//            for (HourlyData hourly : response.getData()) {
+//                dailySum += hourly.getTemp();
+//                hourlyCount++;
+//            }
+//
+//            if (hourlyCount == 0) continue;
+//
+//            double dailyAvgKelvin = dailySum / hourlyCount;
+//            double dailyAvgF = kelvinToFahrenheit(dailyAvgKelvin);
+//
+//            sumFahrenheit += dailyAvgF;
+//            count++;
+//        }
+//
+//        if (count == 0) {
+//            throw new RuntimeException("No temperature data found in range for city: " + city);
+//        }
+//
+//        return sumFahrenheit / count;
+//    }
+
+    // Temporary hardcoded average temps
     public double getAverageTemp(String city, LocalDate startDate, LocalDate endDate) {
-        GeoLocation loc = getLatLon(city);
-
-        double sumFahrenheit = 0;
-        int count = 0;
-
-        // Loop over dates
-        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
-            long epochSeconds = date.atStartOfDay(ZoneOffset.UTC).toEpochSecond();
-
-            String url = UriComponentsBuilder.fromHttpUrl("https://api.openweathermap.org/data/3.0/onecall/timemachine")
-                    .queryParam("lat", loc.getLat())
-                    .queryParam("lon", loc.getLon())
-                    .queryParam("dt", epochSeconds)
-                    .queryParam("appid", apiKey)
-                    .toUriString();
-
-            TimeMachineResponse response = restTemplate.getForObject(url, TimeMachineResponse.class);
-
-            if (response == null || response.getData() == null || response.getData().isEmpty()) {
-                continue; // no data for that day
-            }
-
-            // Average hourly temps for the day (if hourly data is returned)
-            double dailySum = 0;
-            int hourlyCount = 0;
-
-            for (HourlyData hourly : response.getData()) {
-                dailySum += hourly.getTemp();
-                hourlyCount++;
-            }
-
-            if (hourlyCount == 0) continue;
-
-            double dailyAvgKelvin = dailySum / hourlyCount;
-            double dailyAvgF = kelvinToFahrenheit(dailyAvgKelvin);
-
-            sumFahrenheit += dailyAvgF;
-            count++;
+        // For now, return hardcoded summer/winter averages
+        // June-August = summer
+        int startMonth = startDate.getMonthValue();
+        if (startMonth >= 6 && startMonth <= 8) {
+            return 80.0; // Avg summer temp in F
+        } else {
+            return 40.0; // Avg winter temp in F
         }
-
-        if (count == 0) {
-            throw new RuntimeException("No temperature data found in range for city: " + city);
-        }
-
-        return sumFahrenheit / count;
     }
 
     // === Step 1: Fetch current weather data from OpenWeatherMap ===
