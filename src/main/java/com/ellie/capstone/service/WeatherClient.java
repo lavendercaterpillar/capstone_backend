@@ -41,7 +41,7 @@ public class WeatherClient {
         // For now, return hardcoded summer/winter averages
         // June-August = summer
         int startMonth = startDate.getMonthValue();
-        if (startMonth >= 6 && startMonth <= 8) {
+        if (startMonth >= 3 && startMonth <= 8) {
             return 80.0; // Avg summer temp in F
         } else {
             return 40.0; // Avg winter temp in F
