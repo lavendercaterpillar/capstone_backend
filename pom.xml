@@ -98,7 +98,21 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- 7. Spring Boot Flyway  -->
+        <!-- Resilience4j Circuit Breaker -->
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-circuitbreaker</artifactId>
+            <version>2.1.0</version> <!-- Use latest version -->
+        </dependency>
+
+        <!-- Retryable-->
+        <dependency>
+            <groupId>org.springframework.retry</groupId>
+            <artifactId>spring-retry</artifactId>
+            <version>2.0.4</version> <!-- Use latest version -->
+        </dependency>
+
+        <!-- Spring Boot Flyway  -->
 <!--		<dependency>-->
 <!--			<groupId>org.flywaydb</groupId>-->
 <!--			<artifactId>flyway-core</artifactId>-->

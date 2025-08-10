@@ -2,75 +2,88 @@ package com.ellie.capstone.controller;
 
 import com.ellie.capstone.exception.ResourceNotFoundException;
 import com.ellie.capstone.model.Project;
+import com.ellie.capstone.model.Weather;
 import com.ellie.capstone.service.ProjectService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/projects")
-@CrossOrigin(origins = "*")
 public class ProjectController {
 
     private final ProjectService projectService;
 
-    @Autowired
     public ProjectController(ProjectService projectService) {
         this.projectService = projectService;
     }
 
     @PostMapping
-    public ResponseEntity<?> createProject(@Valid @RequestBody Project project, BindingResult result) {
-        if (result.hasErrors()) {
-            Map<String, String> errors = new HashMap<>();
-            result.getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
-            return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
-        }
-        Project savedProject = projectService.saveProject(project);
-        return new ResponseEntity<>(savedProject, HttpStatus.CREATED);
+    public ResponseEntity<Project> createProject(@Valid @RequestBody Project project) {
+        // Weather data automatically handled in service layer
+        Project saved = projectService.createProject(project);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @GetMapping
-    public ResponseEntity<List<Project>> getAllProjects(
+    public List<Project> filterProjects(
             @RequestParam(required = false) String projectName,
-            @RequestParam(required = false) String location) {
-
-        List<Project> projects = projectService.getAllProjects(projectName, location);
+            @RequestParam(required = false) String location
+    ) {
+        List<Project> projects = projectService.filterProjects(projectName, location);
         if (projects.isEmpty()) {
-            throw new ResourceNotFoundException("No projects found");
+            throw new ResourceNotFoundException("No matching projects found.");
         }
-        return ResponseEntity.ok(projects);
+        return projects;
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Project> getProjectById(@PathVariable Long id) {
         Project project = projectService.getProjectById(id);
+        if (project == null) {
+            throw new ResourceNotFoundException("Project with ID " + id + " not found.");
+        }
         return ResponseEntity.ok(project);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateProject(@PathVariable Long id, @Valid @RequestBody Project project, BindingResult result) {
-        if (result.hasErrors()) {
-            Map<String, String> errors = new HashMap<>();
-            result.getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
-            return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    public ResponseEntity<Project> updateProject(
+            @PathVariable Long id,
+            @Valid @RequestBody Project updatedProject) {
+
+        Project existing = projectService.getProjectById(id);
+        if (existing == null) {
+            throw new ResourceNotFoundException("Project with ID " + id + " not found.");
         }
-        Project updatedProject = projectService.updateProject(id, project);
-        return ResponseEntity.ok(updatedProject);
+
+        // Weather updates automatically handled in service layer
+        Project saved = projectService.updateProject(id, updatedProject);
+        return ResponseEntity.ok(saved);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, String>> deleteProject(@PathVariable Long id) {
+    public ResponseEntity<String> deleteProject(@PathVariable Long id) {
+        Project existing = projectService.getProjectById(id);
+        if (existing == null) {
+            throw new ResourceNotFoundException("Project with ID " + id + " not found.");
+        }
+
         projectService.deleteProject(id);
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Project deleted successfully");
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok("Project with ID " + id + " deleted successfully.");
     }
+
+    // NEW ENDPOINTS FOR WEATHER INTEGRATION
+
+    @GetMapping("/{id}/weather")
+    public ResponseEntity<Weather> getProjectWeather(@PathVariable Long id) {
+        Project project = projectService.getProjectById(id);
+        if (project == null || project.getWeather() == null) {
+            throw new ResourceNotFoundException("Weather data not available for project ID " + id);
+        }
+        return ResponseEntity.ok(project.getWeather());
+    }
+
 }

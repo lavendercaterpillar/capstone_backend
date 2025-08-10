@@ -7,6 +7,7 @@ import com.ellie.capstone.repository.ProjectRepository;
 import com.ellie.capstone.repository.WeatherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -17,36 +18,28 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final WeatherService weatherService;
-    private final WeatherRepository weatherRepository;
 
     @Autowired
     public ProjectService(ProjectRepository projectRepository,
-                          WeatherService weatherService,
-                          WeatherRepository weatherRepository) {
+                          WeatherService weatherService) {
         this.projectRepository = projectRepository;
         this.weatherService = weatherService;
-        this.weatherRepository = weatherRepository;
     }
 
-    public Project saveProject(Project project) {
-        // Enrich with weather data
-        Weather weather = weatherService.findByLocation(project.getLocation())
-                .orElseGet(() -> {
-                    Map<String, Object> weatherData = weatherService.getWeatherSummary(project.getLocation());
-                    Weather newWeather = new Weather();
-                    newWeather.setLocation(project.getLocation());
-                    newWeather.setDryBulbTemp((Double) weatherData.get("dryBulbF"));
-                    newWeather.setWetBulbTemp((Double) weatherData.get("wetBulbF"));
-                    newWeather.setAvgSummerTemp((Double) weatherData.get("avgSummerF"));
-                    newWeather.setAvgWinterTemp((Double) weatherData.get("avgWinterF"));
-                    return weatherService.save(newWeather);
-                });
-
-        project.setWeather(weather);
+    @Transactional
+    public Project createProject(Project project) {
+        if (project.getLocation() != null) {
+            Weather weather = weatherService.getWeatherForLocation(project.getLocation());
+            project.setWeather(weather);
+        }
         return projectRepository.save(project);
     }
 
-    public List<Project> getAllProjects(String name, String location) {
+    public List<Project> getAllProjects() {
+        return projectRepository.findAll();
+    }
+
+    public List<Project> filterProjects(String name, String location) {
         if (name != null && location != null) {
             return projectRepository.findByProjectNameContainingIgnoreCaseAndLocationContainingIgnoreCase(name, location);
         } else if (name != null) {
@@ -63,10 +56,21 @@ public class ProjectService {
     }
 
     public Project updateProject(Long id, Project updatedProject) {
-        getProjectById(id); // Ensures project exists
-        updatedProject.setId(id);
-        enrichProjectWithWeather(updatedProject);
-        return projectRepository.save(updatedProject);
+        Project existing = getProjectById(id); // Ensures project exists
+
+        // Update weather if location changed
+        if (updatedProject.getLocation() != null &&
+                !updatedProject.getLocation().equals(existing.getLocation())) {
+            Weather weather = weatherService.getWeatherForLocation(updatedProject.getLocation());
+            existing.setWeather(weather);
+        }
+
+        // Update other fields
+        existing.setProjectName(updatedProject.getProjectName());
+        existing.setArea(updatedProject.getArea());
+
+        // Update all other fields as needed...
+        return projectRepository.save(existing);
     }
 
     public void deleteProject(Long id) {
@@ -74,40 +78,4 @@ public class ProjectService {
         projectRepository.deleteById(id);
     }
 
-    private void enrichProjectWithWeather(Project project) {
-        if (project.getLocation() == null || project.getLocation().isBlank()) {
-            return;
-        }
-
-        Optional<Weather> optionalWeather = weatherService.findByLocation(project.getLocation());
-
-        Weather weather;
-
-        if (optionalWeather.isPresent()) {
-            // Update existing weather data for location
-            weather = optionalWeather.get();
-            updateWeatherFromApi(weather);
-        } else {
-            // Create new weather data for location
-            weather = new Weather();
-            weather.setLocation(project.getLocation());
-            updateWeatherFromApi(weather);
-        }
-
-        // Save or update weather entity
-        weather = weatherService.save(weather);
-
-        // Link project to weather entity
-        project.setWeather(weather);
-    }
-
-    private void updateWeatherFromApi(Weather weather) {
-        Map<String, Object> weatherData = weatherService.getWeatherSummary(weather.getLocation());
-        if (weatherData != null) {
-            weather.setAvgSummerTemp((Double) weatherData.get("avgSummerF"));
-            weather.setAvgWinterTemp((Double) weatherData.get("avgWinterF"));
-            weather.setWetBulbTemp((Double) weatherData.get("wetBulbF"));
-            weather.setDryBulbTemp((Double) weatherData.get("dryBulbF"));
-        }
-    }
 }
